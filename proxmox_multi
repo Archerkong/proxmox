@@ -1,0 +1,12 @@
+
+
+for VMID in {105..110}; do pct clone 101 $VMID ; done;    #批量创建ct主机（复制模板)-链接复制
+for VMID in {105..110}; do pct clone  101 $VMID --full; done;   #批量复制模板-链接复制
+
+pct list    #列出当前ct主机、状态、主机名
+pct start 110    #启动110ct主机
+pct status 102  #查看102主机状态
+pct exec 105 pwd    #在105主机执行命令
+pct destroy 110 --purge   #彻底清除ct主机
+
+
