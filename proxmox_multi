@@ -1,3 +1,21 @@
+#demands:
+1.batch create
+  1.1 create ct template
+    1.1.1 web create ct
+    1.1.2 shutdown ct create template
+  1.2 batch create ct
+    1.2.1 line clone
+      for VMID in {105..110}; do pct clone 101 $VMID ; done;
+    1.2.2 full clone
+      for VMID in {105..110}; do pct clone  101 $VMID --full; done;
+  1.3 batch start
+      pct start 110
+  1.3 install services(like openssh*)
+  1.4 get ip
+2.remote access
+  2.1 ssh ip/web access(vnc)
+3.batch delete
+   pct destroy id --purge
 
 
 for VMID in {105..110}; do pct clone 101 $VMID ; done;    #批量创建ct主机（复制模板)-链接复制
@@ -8,5 +26,4 @@ pct start 110    #启动110ct主机
 pct status 102  #查看102主机状态
 pct exec 105 pwd    #在105主机执行命令
 pct destroy 110 --purge   #彻底清除ct主机
-
 
