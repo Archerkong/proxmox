@@ -1,0 +1,6 @@
+envirement:dell r710
+Proxmox Virtual Environment Version: 7.1-2  #Version: 7.2-1 went something wrong various,forget
+Installation method：USB by balena-etcher-electron-1.5.115-linux-x64 on kali
+
+
+Official tutorial：https://pve.proxmox.com/pve-docs/chapter-pve-installation.html
