@@ -20,6 +20,7 @@
   2.1 ssh ip/web access(vnc)
 3.batch delete
    pct destroy id --purge
+   for VMID in {111..112}; do pct destroy $VMID --purge --force; done;
 
 commands:
 
