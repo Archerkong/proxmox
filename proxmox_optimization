@@ -1,0 +1,94 @@
+一、Proxmox VE 7.x 换源
+
+SSH登录到pve后台，然后一条一条的执行命令
+1.处理掉企业源
+
+rm -rf /etc/apt/sources.list.d/pve-install-repo.list
+echo "#deb https://enterprise.proxmox.com/debian/pve Bullseye pve-enterprise" > /etc/apt/sources.list.d/pve-enterprise.list
+
+2.开始换源
+
+wget https://mirrors.ustc.edu.cn/proxmox/debian/proxmox-release-bullseye.gpg -O /etc/apt/trusted.gpg.d/proxmox-release-bullseye.gpg
+echo "deb https://mirrors.ustc.edu.cn/proxmox/debian/pve bullseye pve-no-subscription" > /etc/apt/sources.list.d/pve-no-subscription.list
+echo "deb https://mirrors.ustc.edu.cn/proxmox/debian/ceph-pacific bullseye main" > /etc/apt/sources.list.d/ceph.list
+sed -i.bak "s#http://download.proxmox.com/debian#https://mirrors.ustc.edu.cn/proxmox/debian#g" /usr/share/perl5/PVE/CLI/pveceph.pm
+sed -i.bak "s#ftp.debian.org/debian#mirrors.aliyun.com/debian#g" /etc/apt/sources.list
+sed -i "s#security.debian.org#mirrors.aliyun.com/debian-security#g" /etc/apt/sources.list
+echo "deb http://download.proxmox.com/debian/pve bullseye pve-no-subscription" >>  /etc/apt/sources.list
+
+3.最后更新
+
+apt update && apt dist-upgrade -y
+
+二、Proxmox VE 7.x 关订阅提示
+
+1.编辑打开这个文件：/usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js (防止手贱，建议备份)
+2.搜索 data.status.toLowerCase，找到这一段：
+
+    502     checked_command: function(orig_cmd) {
+    503         Proxmox.Utils.API2Request(
+    504             {
+    505                 url: '/nodes/localhost/subscription',
+    506                 method: 'GET',
+    507                 failure: function(response, opts) {
+    508                     Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+    509                 },
+    510                 success: function(response, opts) {
+    511                     let res = response.result;
+    512                     if (res === null || res === undefined || !res || res
+    513                         .data.status.toLowerCase() !== 'active') {
+    514                         Ext.Msg.show({
+    515                             title: gettext('No valid subscription'),
+    516                             icon: Ext.Msg.WARNING,
+    517                             message: Proxmox.Utils.getNoSubKeyHtml(res.data.url),
+    518                             buttons: Ext.Msg.OK,
+    519                             callback: function(btn) {
+    520                                 if (btn !== 'ok') {
+    521                                     return;
+    522                                 }
+    523                                 orig_cmd();
+    524                             },
+    525                         });
+    526                     } else {
+    527                         orig_cmd();
+    528                     }
+    529                 },
+    530             },
+    531         );
+    532     },
+
+
+
+3.直接删掉红框内容，变成如下，最后保存即可。
+删除行：514-522、524、525
+
+    502     checked_command: function(orig_cmd) {
+    503         Proxmox.Utils.API2Request(
+    504             {
+    505                 url: '/nodes/localhost/subscription',
+    506                 method: 'GET',
+    507                 failure: function(response, opts) {
+    508                     Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+    509                 },
+    510                 success: function(response, opts) {
+    511                     let res = response.result;
+    512                     if (res === null || res === undefined || !res || res
+    513                         .data.status.toLowerCase() !== 'active') {
+    514                                 orig_cmd();
+    515                     } else {
+    516                         orig_cmd();
+    517                     }
+    518                 },
+    519             },
+    520         );
+    521     },
+    
+
+如果更新到PVE 7.1-5或者更新，发现改了上面的没效果，那么就要多改一步：
+继续搜索 data.status.toLowerCase，找到15018行：
+直接删掉`|| res.data.status.toLowerCase() !== 'active'`，变成如下，最后保存即可
+                 const subscription = !(!res || !res.data);
+4.改完保存，重进PVE界面刷新，去更新点击刷新，就没订阅提示了。
+
+
+reference:https://www.wlgo.cc/archives/5796.html
