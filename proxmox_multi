@@ -34,3 +34,12 @@ pct status 102  #查看102主机状态
 pct exec 105 pwd    #在105主机执行命令
 pct destroy 110 --purge   #彻底清除ct主机
 
+
+1.web create ct
+2.shutdown ct create template
+3.batch create ct
+    for VMID in {105..110}; do pct clone 101 $VMID ; done;
+4.batch start
+    for VMID in {105..110}; do pct start $VMID ; done;
+5.batch delete
+    for VMID in {111..112}; do pct destroy $VMID --purge --force; done;
